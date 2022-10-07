@@ -15,10 +15,22 @@ def region_of_interest(image):
     marked_image = cv2.bitwise_and(image, mask)
     return marked_image
 
+def display_lines(image, lines):
+    line_image = np.zeros_like(image)
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line.reshape(4)
+            cv2.line(line_image, (x1,y1), (x2,y2), (255,0,0), 10)
+    return line_image
+
 image = cv2.imread('lane_image.jpg')
 image_copy = np.copy(image)
 canny = canny(image_copy)
 cropped_image = region_of_interest(canny)
 
-cv2.imshow('result', cropped_image)
+lines = cv2.HoughLinesP(cropped_image, 2, np.pi/180, 100, np.array([]), minLineLength=40, maxLineGap=5)
+line_image = display_lines(image_copy, lines)
+overlay_image = cv2.addWeighted(image_copy, 0.8, line_image, 1, 1)
+
+cv2.imshow('result', overlay_image)
 cv2.waitKey(0)
